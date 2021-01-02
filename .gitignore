@@ -1,0 +1,17 @@
+*.aux
+*.bbl
+*.blg
+*.csv
+*.lof
+*.log
+*.out
+*.toc
+*.pdf
+*.gz
+*.bcf
+*.xml
+__latexindent_temp.tex
+*.fdb_latexmk
+*.fls
+*.synctex(busy)
+!*/img/*.pdf

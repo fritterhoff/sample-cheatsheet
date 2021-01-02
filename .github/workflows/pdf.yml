@@ -1,0 +1,66 @@
+name: Build artifact
+
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "v*"
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Generate revision.tex
+        run: |
+          echo "\\renewcommand{\\revisiondate}{`git log -1 --format=\"%ad\" --date=short $(pwd)`}" > $GITHUB_WORKSPACE/revision.tex
+          echo "\\renewcommand{\\revision}{`git log -1 --format=\"%h\" $(pwd)`}" >> $GITHUB_WORKSPACE/revision.tex
+
+      - name: Generate build script
+        run: |
+          echo "#!/bin/sh
+          cd /github/workspace/
+          pdflatex --shell-escape document.tex 
+          biber document 
+          pdflatex --shell-escape document.tex
+          pdflatex --shell-escape document.tex
+          pdflatex --shell-escape document.tex" > $GITHUB_WORKSPACE/generate.sh
+          chmod +x $GITHUB_WORKSPACE/generate.sh
+
+      - name: Build PDF
+        uses: docker://ghcr.io/flori-uni/cheatsheet-template:latest
+        with:
+          entrypoint: "/github/workspace/generate.sh"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Generated document
+          path: "document.pdf"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./document.pdf
+          asset_name: document.pdf
+          asset_content_type: application/pdf
