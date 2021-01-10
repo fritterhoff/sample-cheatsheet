@@ -32,7 +32,7 @@ jobs:
           chmod +x $GITHUB_WORKSPACE/generate.sh
 
       - name: Build PDF
-        uses: docker://ghcr.io/fritterhoff/cheatsheet-template:latest
+        uses: docker://ghcr.io/fritterhoff/cheatsheet-basics:latest
         with:
           entrypoint: "/github/workspace/generate.sh"
 
