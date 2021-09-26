@@ -24,11 +24,11 @@ jobs:
         run: |
           echo "#!/bin/sh
           cd /github/workspace/
-          pdflatex --shell-escape document.tex 
+          lualatex --shell-escape document.tex 
           biber document 
-          pdflatex --shell-escape document.tex
-          pdflatex --shell-escape document.tex
-          pdflatex --shell-escape document.tex" > $GITHUB_WORKSPACE/generate.sh
+          lualatex --shell-escape document.tex
+          lualatex --shell-escape document.tex
+          lualatex --shell-escape document.tex" > $GITHUB_WORKSPACE/generate.sh
           chmod +x $GITHUB_WORKSPACE/generate.sh
 
       - name: Build PDF
